@@ -47,9 +47,20 @@ doesn't structure. Notion AI writes but isn't voice-driven or stage-gated.
 headphones, and this app you could design and spec a full project on a commute.
 That's the pitch.
 
-**Biggest risk**: Web Speech API is fragile — it times out, loses connection, requires
-user gesture to start. The UX loop of "speak → pause → see output" needs to feel
-snappy, not broken. Needs early testing on real mobile devices.
+**Biggest risk originally**: Web Speech API on mobile Safari — fragile, requires user
+gesture per utterance, can cut off mid-sentence. Needs early testing on real devices.
+
+**Revision — phone / WhatsApp as primary input**: if Web Speech API is unreliable,
+route around it entirely. Call a phone number → AI guides you through the stages →
+structured doc delivered by SMS or WhatsApp reply.
+
+Voice platform (Vapi.ai / Bland.ai / Retell AI) hosts all infrastructure; the Vercel
+frontend just needs a button to initiate the call via their JS SDK. No backend required.
+Cost ~$0.05–0.15/min; a 10-min design session = $0.50–1.50. Fine for personal use.
+
+WhatsApp async mode: user sends a voice note to a WhatsApp number → LLM processes it →
+structured doc comes back as a WhatsApp text. Lowest friction for mobile — no call,
+no browser, just the messaging app already on your phone.
 
 **Key open question**: does the structured-output quality from a simple prompt template
 hold up across arbitrary brainstorm input, or does it need multiple LLM passes?
