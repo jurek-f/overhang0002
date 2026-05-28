@@ -152,19 +152,70 @@ can cut off mid-sentence. Needs early device testing.
 
 ---
 
+## Revision — 2026-05-28: Phone / WhatsApp as primary input channel
+
+**New direction**: if Web Speech API is fragile, don't fix it — route around it.
+The fallback is a phone call or WhatsApp voice note. This turns out to be the better
+primary architecture, not just a fallback.
+
+### Two input modes now in scope
+
+**Mode A — Browser (Web Speech API)**
+- User opens app, speaks into mic, gets structured output rendered in the page
+- Works on desktop; mobile Safari is unreliable
+- No extra cost; no third-party voice platform
+
+**Mode B — Phone call or WhatsApp (voice platform)**
+- User taps "Start session" button → a call is initiated to/from their phone (Vapi/Bland),
+  OR user sends a WhatsApp voice note to a dedicated number
+- AI guides them through the stages; delivers structured output via SMS / WhatsApp message
+- Requires a third-party voice platform (Vapi.ai, Bland.ai, Retell AI) or WhatsApp Cloud API
+- Cost: ~$0.05–0.15/min for phone; ~$0.01–0.06/conversation for WhatsApp
+- For personal use at ~5–10 min/session: $0.25–1.50 per session — acceptable
+
+### Voice platform landscape
+
+| Platform | Model | Cost | Notes |
+|----------|-------|------|-------|
+| Vapi.ai | Configurable LLM + STT/TTS | ~$0.05–0.10/min | Developer-focused; good docs |
+| Bland.ai | AI phone calls | ~$0.09/min | Simpler to configure |
+| Retell AI | Voice agents | ~$0.07/min | Similar to Vapi |
+| WhatsApp Cloud API | Meta | ~$0.01–0.06/conversation | Async voice note → text reply; no live call |
+
+Key point: Vapi/Bland/Retell host the infrastructure. The Vercel frontend just has a
+button that initiates the call via their JS SDK. No backend server required from our side.
+
+### Output delivery options
+
+1. **Voice summary during call** — AI reads back the structured doc at end of session
+2. **SMS** — plain text with the markdown doc sent after call
+3. **WhatsApp reply** — richest option; markdown → formatted WhatsApp message
+4. **Email** — most portable; works regardless of messaging platform
+
+### Constraint update
+
+This approach is no longer "purely frontend" in spirit — it depends on a paid third-party
+voice platform. However, the Vercel deployment remains static; no server is maintained.
+Acceptable for a personal tool.
+
+---
+
 ## Open Questions
 
 1. Does a single prompt template per stage produce useful structured output, or do we
    need multi-turn conversation per stage?
 2. Should the app support resuming a session (load previously saved stage docs)?
-3. Is user-supplied API key in localStorage acceptable for the target user?
+3. Phone call primary + browser fallback, or browser primary + phone fallback?
+4. Which voice platform has the best developer experience for configuring multi-stage
+   conversational workflows? (Vapi seems most flexible.)
+5. WhatsApp async (voice note → reply) vs. live phone call — which fits the use case better?
 
 ---
 
 ## Go / No-Go Signal
 
-- Confirm Web Speech API works acceptably on mobile Safari (quick spike)
-- Confirm Claude API can be called from browser JS with user-supplied key (CORS check)
-- If both pass: move to Stage 2
+- Confirm Vapi.ai (or equivalent) can be configured to run a multi-stage prompt workflow
+- Confirm output can be delivered back to the user (SMS or WhatsApp)
+- If yes: move to Stage 2 — browser vs. phone mode is a scope decision, not a blocker
 
 ---
