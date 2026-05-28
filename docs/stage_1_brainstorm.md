@@ -2,7 +2,7 @@
 
 **Feature name**: voice-vibe-coder
 **Date started**: 2026-05-28
-**Status**: [x] In progress  [ ] Done — moved to Stage 2
+**Status**: [ ] In progress  [x] Done — moved to Stage 2
 
 ---
 
