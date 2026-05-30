@@ -12,12 +12,24 @@ import { SettingsDrawer } from '../components/voice/SettingsDrawer'
 import type { SessionStatus, Turn, StageOutput, ApiKeys, BackchannelEvent, LLMModel } from '../types'
 import { DEFAULT_KEYS, STORAGE_KEY, MODEL_STORAGE_KEY, MODEL_LABELS } from '../types'
 
+function envKeys(): Partial<ApiKeys> {
+  return {
+    deepgram:          import.meta.env.VITE_DEEPGRAM_KEY        || undefined,
+    elevenlabs:        import.meta.env.VITE_ELEVENLABS_KEY      || undefined,
+    elevenLabsVoiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID || undefined,
+    anthropic:         import.meta.env.VITE_ANTHROPIC_KEY       || undefined,
+    gemini:            import.meta.env.VITE_GEMINI_KEY          || undefined,
+  }
+}
+
 function loadKeys(): ApiKeys {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? { ...DEFAULT_KEYS, ...JSON.parse(raw) } : DEFAULT_KEYS
+    const stored = raw ? JSON.parse(raw) : {}
+    // env vars take priority; localStorage fills any gaps for local dev
+    return { ...DEFAULT_KEYS, ...stored, ...envKeys() }
   } catch {
-    return DEFAULT_KEYS
+    return { ...DEFAULT_KEYS, ...envKeys() }
   }
 }
 
