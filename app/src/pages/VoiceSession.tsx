@@ -182,6 +182,9 @@ export function VoiceSession() {
   const isActive = status !== 'idle' && status !== 'done'
   const llmKeyPresent = model === 'gemini-flash' ? !!keys.gemini : !!keys.anthropic
   const missingKeys = !keys.deepgram || !keys.elevenlabs || !llmKeyPresent
+  // Hide settings gear when all keys are baked in via env vars at build time
+  const allKeysFromEnv = !!__DEEPGRAM_API_KEY__ && !!__ELEVENLABS_API_KEY__ && !!__ANTHROPIC_API_KEY__ && !!__GEMINI_API_KEY__
+  const showSettingsGear = !allKeysFromEnv
 
   return (
     <div
@@ -204,13 +207,15 @@ export function VoiceSession() {
             Your voice is transcribed by Deepgram. Nothing is stored after the session ends.
           </div>
         </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          title="API key settings"
-          style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', padding: '0.4rem 0.6rem', fontSize: '1rem', color: '#6b7280' }}
-        >
-          ⚙
-        </button>
+        {showSettingsGear && (
+          <button
+            onClick={() => setShowSettings(true)}
+            title="API key settings"
+            style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', padding: '0.4rem 0.6rem', fontSize: '1rem', color: '#6b7280' }}
+          >
+            ⚙
+          </button>
+        )}
       </div>
 
       {/* Model picker */}
