@@ -26,7 +26,9 @@ export function useVAD(callbacks: VADCallbacks) {
     // Some browsers start AudioContext in 'suspended' state
     if (ctx.state === 'suspended') await ctx.resume()
 
-    await ctx.audioWorklet.addModule('/worklets/vad-processor.js')
+    // Absolute URL avoids MIME/path ambiguity with AudioWorklet.addModule
+    const workletUrl = `${location.origin}/worklets/vad-processor.js`
+    await ctx.audioWorklet.addModule(workletUrl)
     const node = new AudioWorkletNode(ctx, 'vad-processor')
     nodeRef.current = node
 

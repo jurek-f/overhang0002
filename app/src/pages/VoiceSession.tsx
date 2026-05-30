@@ -128,8 +128,8 @@ export function VoiceSession() {
       backchannel.startSession()
       setStatus('listening')
     } catch (e) {
-      console.error('Session start failed:', e)
-      const msg = e instanceof Error ? e.message : String(e)
+      console.error('[VoiceSession] start failed:', e)
+      const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e)
       const isDenied = msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed')
       setError(isDenied ? 'Microphone access denied. Please allow microphone access and try again.' : `Failed to start: ${msg}`)
       setStatus('idle')
