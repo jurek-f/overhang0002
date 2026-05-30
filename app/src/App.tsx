@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { VoiceSession } from './pages/VoiceSession'
 
 type LegalPage = 'about' | 'privacy' | 'impressum' | 'datenschutz'
 
@@ -21,9 +22,10 @@ function App() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+      <VoiceSession />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 'auto', paddingBottom: '1rem' }}>
         <button onClick={() => setLegalPage('about')} style={legalLinkStyle}>About</button>
         <span style={{ opacity: 0.25, fontSize: '0.7rem' }}>·</span>
         <button onClick={() => setLegalPage('privacy')} style={legalLinkStyle}>Privacy Policy</button>
