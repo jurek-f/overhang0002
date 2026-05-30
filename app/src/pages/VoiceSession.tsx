@@ -14,11 +14,11 @@ import { DEFAULT_KEYS, STORAGE_KEY, MODEL_STORAGE_KEY, MODEL_LABELS } from '../t
 
 function envKeys(): Partial<ApiKeys> {
   return {
-    deepgram:          import.meta.env.VITE_DEEPGRAM_KEY        || undefined,
-    elevenlabs:        import.meta.env.VITE_ELEVENLABS_KEY      || undefined,
-    elevenLabsVoiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID || undefined,
-    anthropic:         import.meta.env.VITE_ANTHROPIC_KEY       || undefined,
-    gemini:            import.meta.env.VITE_GEMINI_KEY          || undefined,
+    deepgram:          import.meta.env.VITE_DEEPGRAM_API_KEY        || undefined,
+    elevenlabs:        import.meta.env.VITE_ELEVENLABS_API_KEY      || undefined,
+    elevenLabsVoiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID     || undefined,
+    anthropic:         import.meta.env.VITE_ANTHROPIC_API_KEY       || undefined,
+    gemini:            import.meta.env.VITE_GEMINI_API_KEY          || undefined,
   }
 }
 
