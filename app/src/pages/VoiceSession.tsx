@@ -2,15 +2,15 @@ import { useState, useCallback, useRef } from 'react'
 import { useVAD } from '../hooks/useVAD'
 import { useDeepgram } from '../hooks/useDeepgram'
 import { useBackchannel } from '../hooks/useBackchannel'
-import { useClaude } from '../hooks/useClaude'
+import { useLLM } from '../hooks/useLLM'
 import { useElevenLabs } from '../hooks/useElevenLabs'
 import { StatusRing } from '../components/voice/StatusRing'
 import { TranscriptFeed } from '../components/voice/TranscriptFeed'
 import { BackchannelLog } from '../components/voice/BackchannelLog'
 import { StageOutputPanel } from '../components/voice/StageOutput'
 import { SettingsDrawer } from '../components/voice/SettingsDrawer'
-import type { SessionStatus, Turn, StageOutput, ApiKeys, BackchannelEvent } from '../types'
-import { DEFAULT_KEYS, STORAGE_KEY } from '../types'
+import type { SessionStatus, Turn, StageOutput, ApiKeys, BackchannelEvent, LLMModel } from '../types'
+import { DEFAULT_KEYS, STORAGE_KEY, MODEL_STORAGE_KEY, MODEL_LABELS } from '../types'
 
 function loadKeys(): ApiKeys {
   try {
@@ -21,8 +21,13 @@ function loadKeys(): ApiKeys {
   }
 }
 
+function loadModel(): LLMModel {
+  return (localStorage.getItem(MODEL_STORAGE_KEY) as LLMModel) ?? 'sonnet'
+}
+
 export function VoiceSession() {
   const [keys, setKeys] = useState<ApiKeys>(loadKeys)
+  const [model, setModel] = useState<LLMModel>(loadModel)
   const [showSettings, setShowSettings] = useState(false)
   const [status, setStatus] = useState<SessionStatus>('idle')
   const [turns, setTurns] = useState<Turn[]>([])
@@ -36,7 +41,7 @@ export function VoiceSession() {
   const turnsRef = useRef<Turn[]>([])
   turnsRef.current = turns
 
-  const { sendTurn, extractStageOutput } = useClaude(keys.anthropic)
+  const { sendTurn, extractStageOutput } = useLLM(keys, model)
 
   const tts = useElevenLabs(keys.elevenlabs, keys.elevenLabsVoiceId, {
     onStart: () => setStatus('ai_speaking'),
@@ -157,8 +162,14 @@ export function VoiceSession() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(k))
   }, [])
 
+  const handleModelChange = useCallback((m: LLMModel) => {
+    setModel(m)
+    localStorage.setItem(MODEL_STORAGE_KEY, m)
+  }, [])
+
   const isActive = status !== 'idle' && status !== 'done'
-  const missingKeys = !keys.deepgram || !keys.elevenlabs || !keys.anthropic
+  const llmKeyPresent = model === 'gemini-flash' ? !!keys.gemini : !!keys.anthropic
+  const missingKeys = !keys.deepgram || !keys.elevenlabs || !llmKeyPresent
 
   return (
     <div
@@ -188,6 +199,31 @@ export function VoiceSession() {
         >
           ⚙
         </button>
+      </div>
+
+      {/* Model picker */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginBottom: '1.25rem' }}>
+        {(Object.keys(MODEL_LABELS) as LLMModel[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => !isActive && handleModelChange(m)}
+            disabled={isActive}
+            style={{
+              padding: '0.3rem 0.75rem',
+              borderRadius: '999px',
+              border: `1.5px solid ${model === m ? '#6366f1' : '#e5e7eb'}`,
+              background: model === m ? '#eef2ff' : '#fff',
+              color: model === m ? '#4f46e5' : '#6b7280',
+              fontWeight: model === m ? 600 : 400,
+              fontSize: '0.78rem',
+              cursor: isActive ? 'not-allowed' : 'pointer',
+              opacity: isActive && model !== m ? 0.4 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {MODEL_LABELS[m]}
+          </button>
+        ))}
       </div>
 
       {/* Status ring */}

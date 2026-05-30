@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { VoiceSession } from './pages/VoiceSession'
+import { PasscodeGate } from './components/PasscodeGate'
 
 type LegalPage = 'about' | 'privacy' | 'impressum' | 'datenschutz'
 
@@ -12,6 +13,12 @@ const legalLinkStyle: React.CSSProperties = {
 
 function App() {
   const [legalPage, setLegalPage] = useState<LegalPage | null>(null)
+  const passcode = import.meta.env.VITE_ACCESS_PASSCODE as string | undefined
+  const [unlocked, setUnlocked] = useState(
+    !passcode || sessionStorage.getItem('vvc_unlocked') === '1'
+  )
+
+  if (!unlocked) return <PasscodeGate onUnlock={() => setUnlocked(true)} />
 
   return (
     <div style={{
