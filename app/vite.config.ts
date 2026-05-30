@@ -8,13 +8,13 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Explicitly expose only the vars this app needs — nothing else leaks
-      'import.meta.env.ACCESS_PASSCODE':     JSON.stringify(env.ACCESS_PASSCODE     ?? ''),
-      'import.meta.env.DEEPGRAM_API_KEY':    JSON.stringify(env.DEEPGRAM_API_KEY    ?? ''),
-      'import.meta.env.ELEVENLABS_API_KEY':  JSON.stringify(env.ELEVENLABS_API_KEY  ?? ''),
-      'import.meta.env.ELEVENLABS_VOICE_ID': JSON.stringify(env.ELEVENLABS_VOICE_ID ?? ''),
-      'import.meta.env.ANTHROPIC_API_KEY':   JSON.stringify(env.ANTHROPIC_API_KEY   ?? ''),
-      'import.meta.env.GEMINI_API_KEY':      JSON.stringify(env.GEMINI_API_KEY      ?? ''),
+      // Plain globals — Vite owns import.meta.env and ignores define keys that use that prefix
+      __ACCESS_PASSCODE__:     JSON.stringify(env.ACCESS_PASSCODE     ?? ''),
+      __DEEPGRAM_API_KEY__:    JSON.stringify(env.DEEPGRAM_API_KEY    ?? ''),
+      __ELEVENLABS_API_KEY__:  JSON.stringify(env.ELEVENLABS_API_KEY  ?? ''),
+      __ELEVENLABS_VOICE_ID__: JSON.stringify(env.ELEVENLABS_VOICE_ID ?? ''),
+      __ANTHROPIC_API_KEY__:   JSON.stringify(env.ANTHROPIC_API_KEY   ?? ''),
+      __GEMINI_API_KEY__:      JSON.stringify(env.GEMINI_API_KEY      ?? ''),
     },
   }
 })

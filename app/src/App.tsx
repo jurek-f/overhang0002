@@ -13,7 +13,7 @@ const legalLinkStyle: React.CSSProperties = {
 
 function App() {
   const [legalPage, setLegalPage] = useState<LegalPage | null>(null)
-  const passcode = import.meta.env.ACCESS_PASSCODE as string | undefined
+  const passcode = __ACCESS_PASSCODE__ as string | undefined
   const [unlocked, setUnlocked] = useState(
     !passcode || sessionStorage.getItem('vvc_unlocked') === '1'
   )

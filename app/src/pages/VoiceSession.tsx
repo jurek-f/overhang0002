@@ -14,11 +14,11 @@ import { DEFAULT_KEYS, STORAGE_KEY, MODEL_STORAGE_KEY, MODEL_LABELS } from '../t
 
 function envKeys(): Partial<ApiKeys> {
   return {
-    deepgram:          import.meta.env.DEEPGRAM_API_KEY    || undefined,
-    elevenlabs:        import.meta.env.ELEVENLABS_API_KEY  || undefined,
-    elevenLabsVoiceId: import.meta.env.ELEVENLABS_VOICE_ID || undefined,
-    anthropic:         import.meta.env.ANTHROPIC_API_KEY   || undefined,
-    gemini:            import.meta.env.GEMINI_API_KEY      || undefined,
+    deepgram:          __DEEPGRAM_API_KEY__    || undefined,
+    elevenlabs:        __ELEVENLABS_API_KEY__  || undefined,
+    elevenLabsVoiceId: __ELEVENLABS_VOICE_ID__ || undefined,
+    anthropic:         __ANTHROPIC_API_KEY__   || undefined,
+    gemini:            __GEMINI_API_KEY__      || undefined,
   }
 }
 

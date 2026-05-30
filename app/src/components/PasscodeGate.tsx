@@ -8,7 +8,7 @@ export function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
   useEffect(() => { inputRef.current?.focus() }, [])
 
   const attempt = () => {
-    if (value === import.meta.env.ACCESS_PASSCODE) {
+    if (value === __ACCESS_PASSCODE__) {
       sessionStorage.setItem('vvc_unlocked', '1')
       onUnlock()
     } else {
