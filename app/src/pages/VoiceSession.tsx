@@ -127,8 +127,11 @@ export function VoiceSession() {
       deepgram.connect(stream)
       backchannel.startSession()
       setStatus('listening')
-    } catch {
-      setError('Microphone access denied or not available.')
+    } catch (e) {
+      console.error('Session start failed:', e)
+      const msg = e instanceof Error ? e.message : String(e)
+      const isDenied = msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed')
+      setError(isDenied ? 'Microphone access denied. Please allow microphone access and try again.' : `Failed to start: ${msg}`)
       setStatus('idle')
     }
   }, [vad, deepgram, backchannel])

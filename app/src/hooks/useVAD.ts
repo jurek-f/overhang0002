@@ -23,6 +23,9 @@ export function useVAD(callbacks: VADCallbacks) {
     const ctx = new AudioContext()
     ctxRef.current = ctx
 
+    // Some browsers start AudioContext in 'suspended' state
+    if (ctx.state === 'suspended') await ctx.resume()
+
     await ctx.audioWorklet.addModule('/worklets/vad-processor.js')
     const node = new AudioWorkletNode(ctx, 'vad-processor')
     nodeRef.current = node
