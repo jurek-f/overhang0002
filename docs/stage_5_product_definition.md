@@ -121,6 +121,25 @@ File location: sessionStorage only — not committed, not served as a static ass
 
 ---
 
+## Voice-Optimised LLM Output
+
+The Claude system prompt must enforce spoken-language constraints — this is a speech tech
+decision, not just prompt hygiene:
+
+- **Response length**: 1–2 sentences per turn maximum. Voice comprehension drops sharply
+  with longer responses; the listener can't re-read.
+- **Information density**: one idea per turn. Never combine question + context + elaboration
+  in a single response. Ask one thing, wait for an answer.
+- **Sentence structure**: simple and direct. No subordinate clauses stacked three deep.
+  No "firstly / secondly / thirdly". No markdown of any kind (no bullets, headers, bold).
+- **Natural spoken rhythm**: contractions ("you're" not "you are"), short words, active voice.
+  Write how a thoughtful person speaks, not how they write.
+
+This is a demonstrable skill in the demo — a professional listening will notice immediately
+whether the AI sounds like it was designed for voice or like a chatbot reading its output aloud.
+
+---
+
 ## Constraints Carried Forward
 
 | Constraint | Impact |
