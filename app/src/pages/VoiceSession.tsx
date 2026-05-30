@@ -8,54 +8,37 @@ import { StatusRing } from '../components/voice/StatusRing'
 import { TranscriptFeed } from '../components/voice/TranscriptFeed'
 import { BackchannelLog } from '../components/voice/BackchannelLog'
 import { StageOutputPanel } from '../components/voice/StageOutput'
-import { SettingsDrawer } from '../components/voice/SettingsDrawer'
-import type { SessionStatus, Turn, StageOutput, ApiKeys, BackchannelEvent, LLMModel } from '../types'
-import { DEFAULT_KEYS, STORAGE_KEY, MODEL_STORAGE_KEY, MODEL_LABELS } from '../types'
+import type { SessionStatus, Turn, StageOutput, LLMModel } from '../types'
+import { MODEL_LABELS, MODEL_STORAGE_KEY } from '../types'
 
-function envKeys(): Partial<ApiKeys> {
-  return {
-    deepgram:          __DEEPGRAM_API_KEY__    || undefined,
-    elevenlabs:        __ELEVENLABS_API_KEY__  || undefined,
-    elevenLabsVoiceId: __ELEVENLABS_VOICE_ID__ || undefined,
-    anthropic:         __ANTHROPIC_API_KEY__   || undefined,
-    gemini:            __GEMINI_API_KEY__      || undefined,
-  }
-}
-
-function loadKeys(): ApiKeys {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const stored = raw ? JSON.parse(raw) : {}
-    // env vars take priority; localStorage fills any gaps for local dev
-    return { ...DEFAULT_KEYS, ...stored, ...envKeys() }
-  } catch {
-    return { ...DEFAULT_KEYS, ...envKeys() }
-  }
-}
+const KEYS = {
+  deepgram:          __DEEPGRAM_API_KEY__,
+  elevenlabs:        __ELEVENLABS_API_KEY__,
+  elevenLabsVoiceId: __ELEVENLABS_VOICE_ID__,
+  anthropic:         __ANTHROPIC_API_KEY__,
+  gemini:            __GEMINI_API_KEY__,
+} as const
 
 function loadModel(): LLMModel {
   return (localStorage.getItem(MODEL_STORAGE_KEY) as LLMModel) ?? 'sonnet'
 }
 
 export function VoiceSession() {
-  const [keys, setKeys] = useState<ApiKeys>(loadKeys)
   const [model, setModel] = useState<LLMModel>(loadModel)
-  const [showSettings, setShowSettings] = useState(false)
   const [status, setStatus] = useState<SessionStatus>('idle')
   const [turns, setTurns] = useState<Turn[]>([])
   const [interimText, setInterimText] = useState('')
-  const [backchannelEvents, setBackchannelEvents] = useState<BackchannelEvent[]>([])
+  const [backchannelEvents, setBackchannelEvents] = useState<import('../types').BackchannelEvent[]>([])
   const [stageOutput, setStageOutput] = useState<StageOutput | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Accumulate final transcript segments between turn-ends
   const pendingTranscriptRef = useRef('')
   const turnsRef = useRef<Turn[]>([])
   turnsRef.current = turns
 
-  const { sendTurn, extractStageOutput } = useLLM(keys, model)
+  const { sendTurn, extractStageOutput } = useLLM(KEYS.anthropic, KEYS.gemini, model)
 
-  const tts = useElevenLabs(keys.elevenlabs, keys.elevenLabsVoiceId, {
+  const tts = useElevenLabs(KEYS.elevenlabs, KEYS.elevenLabsVoiceId, {
     onStart: () => setStatus('ai_speaking'),
     onEnd: () => {
       vad.setBargeInMode(false)
@@ -108,7 +91,6 @@ export function VoiceSession() {
     },
     onBargeIn: () => {
       tts.stop()
-      // Mark the last AI turn as interrupted
       setTurns((prev) => {
         const copy = [...prev]
         const last = copy[copy.length - 1]
@@ -120,7 +102,7 @@ export function VoiceSession() {
     },
   })
 
-  const deepgram = useDeepgram(keys.deepgram, {
+  const deepgram = useDeepgram(KEYS.deepgram, {
     onTranscript: (text, isFinal) => {
       if (isFinal) {
         pendingTranscriptRef.current += (pendingTranscriptRef.current ? ' ' : '') + text
@@ -145,7 +127,7 @@ export function VoiceSession() {
       deepgram.connect(stream)
       backchannel.startSession()
       setStatus('listening')
-    } catch (e) {
+    } catch {
       setError('Microphone access denied or not available.')
       setStatus('idle')
     }
@@ -169,22 +151,12 @@ export function VoiceSession() {
     }
   }, [backchannel, deepgram, vad, tts, extractStageOutput])
 
-  const handleSaveKeys = useCallback((k: ApiKeys) => {
-    setKeys(k)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(k))
-  }, [])
-
   const handleModelChange = useCallback((m: LLMModel) => {
     setModel(m)
     localStorage.setItem(MODEL_STORAGE_KEY, m)
   }, [])
 
   const isActive = status !== 'idle' && status !== 'done'
-  const llmKeyPresent = model === 'gemini-flash' ? !!keys.gemini : !!keys.anthropic
-  const missingKeys = !keys.deepgram || !keys.elevenlabs || !llmKeyPresent
-  // Hide settings gear when all keys are baked in via env vars at build time
-  const allKeysFromEnv = !!__DEEPGRAM_API_KEY__ && !!__ELEVENLABS_API_KEY__ && !!__ANTHROPIC_API_KEY__ && !!__GEMINI_API_KEY__
-  const showSettingsGear = !allKeysFromEnv
 
   return (
     <div
@@ -200,22 +172,11 @@ export function VoiceSession() {
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#111' }}>voice vibe coder</div>
-          <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: '0.1rem' }}>
-            Your voice is transcribed by Deepgram. Nothing is stored after the session ends.
-          </div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1rem', color: '#111' }}>voice vibe coder</div>
+        <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: '0.1rem' }}>
+          Your voice is transcribed by Deepgram. Nothing is stored after the session ends.
         </div>
-        {showSettingsGear && (
-          <button
-            onClick={() => setShowSettings(true)}
-            title="API key settings"
-            style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', padding: '0.4rem 0.6rem', fontSize: '1rem', color: '#6b7280' }}
-          >
-            ⚙
-          </button>
-        )}
       </div>
 
       {/* Model picker */}
@@ -275,17 +236,13 @@ export function VoiceSession() {
         {!isActive && status !== 'done' && (
           <button
             onClick={handleStart}
-            disabled={missingKeys}
-            title={missingKeys ? 'Add API keys in settings first' : undefined}
             style={{
               flex: 1, padding: '0.75rem', borderRadius: '10px',
-              background: missingKeys ? '#e5e7eb' : '#6366f1',
-              color: missingKeys ? '#9ca3af' : '#fff',
-              border: 'none', fontWeight: 600, fontSize: '0.95rem',
-              cursor: missingKeys ? 'not-allowed' : 'pointer',
+              background: '#6366f1', color: '#fff',
+              border: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer',
             }}
           >
-            {missingKeys ? 'Add API keys to start' : 'Start session'}
+            Start session
           </button>
         )}
         {isActive && (
@@ -315,14 +272,6 @@ export function VoiceSession() {
           </button>
         )}
       </div>
-
-      {showSettings && (
-        <SettingsDrawer
-          keys={keys}
-          onSave={handleSaveKeys}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
     </div>
   )
 }

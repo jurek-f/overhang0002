@@ -35,21 +35,4 @@ export const MODEL_LABELS: Record<LLMModel, string> = {
   'gemini-flash': 'Gemini 2.0 Flash',
 }
 
-export type ApiKeys = {
-  deepgram: string
-  elevenlabs: string
-  elevenLabsVoiceId: string
-  anthropic: string
-  gemini: string
-}
-
-export const DEFAULT_KEYS: ApiKeys = {
-  deepgram: '',
-  elevenlabs: '',
-  elevenLabsVoiceId: '21m00Tcm4TlvDq8ikWAM', // Rachel
-  anthropic: '',
-  gemini: '',
-}
-
-export const STORAGE_KEY = 'vvc_api_keys'
 export const MODEL_STORAGE_KEY = 'vvc_model'

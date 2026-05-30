@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { SYSTEM_PROMPT, buildMessages } from '../prompts/stage1'
-import type { Turn, StageOutput, ApiKeys, LLMModel } from '../types'
+import type { Turn, StageOutput, LLMModel } from '../types'
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
 const GEMINI_URL = (model: string) =>
@@ -61,7 +61,7 @@ async function callGemini(
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 }
 
-export function useLLM(keys: ApiKeys, model: LLMModel) {
+export function useLLM(anthropicKey: string, geminiKey: string, model: LLMModel) {
   const sendTurn = useCallback(
     async (turns: Turn[]): Promise<string> => {
       const messages = buildMessages(turns)
@@ -69,11 +69,11 @@ export function useLLM(keys: ApiKeys, model: LLMModel) {
         messages.push({ role: 'user', content: "I have a product idea I'd like to think through." })
       }
       if (model === 'gemini-flash') {
-        return callGemini(keys.gemini, messages, SYSTEM_PROMPT, 120)
+        return callGemini(geminiKey, messages, SYSTEM_PROMPT, 120)
       }
-      return callAnthropic(keys.anthropic, ANTHROPIC_MODEL[model]!, messages, SYSTEM_PROMPT, 120)
+      return callAnthropic(anthropicKey, ANTHROPIC_MODEL[model]!, messages, SYSTEM_PROMPT, 120)
     },
-    [keys, model]
+    [anthropicKey, geminiKey, model]
   )
 
   const extractStageOutput = useCallback(
@@ -87,9 +87,9 @@ export function useLLM(keys: ApiKeys, model: LLMModel) {
 
       let text: string
       if (model === 'gemini-flash') {
-        text = await callGemini(keys.gemini, msgs, extractSystem, 500)
+        text = await callGemini(geminiKey, msgs, extractSystem, 500)
       } else {
-        text = await callAnthropic(keys.anthropic, ANTHROPIC_MODEL[model]!, msgs, extractSystem, 500)
+        text = await callAnthropic(anthropicKey, ANTHROPIC_MODEL[model]!, msgs, extractSystem, 500)
       }
 
       // Strip markdown code fences if present
@@ -100,7 +100,7 @@ export function useLLM(keys: ApiKeys, model: LLMModel) {
         return { problem: '', rawIdeas: [], landscapeNotes: '' }
       }
     },
-    [keys, model]
+    [anthropicKey, geminiKey, model]
   )
 
   return { sendTurn, extractStageOutput }
