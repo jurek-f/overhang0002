@@ -73,7 +73,8 @@ export function SettingsDrawer({ keys, onSave, onClose }: Props) {
         {field('Deepgram API Key', 'deepgram', 'dg_...', 'Used for real-time speech transcription')}
         {field('ElevenLabs API Key', 'elevenlabs', 'sk_...', 'Used for AI voice synthesis')}
         {field('ElevenLabs Voice ID', 'elevenLabsVoiceId', '21m00Tcm4TlvDq8ikWAM', 'Leave as default for Rachel voice')}
-        {field('Anthropic API Key', 'anthropic', 'sk-ant-...', 'Used for AI conversation')}
+        {field('Anthropic API Key', 'anthropic', 'sk-ant-...', 'Required for Sonnet and Haiku models')}
+        {field('Google AI API Key', 'gemini', 'AIza...', 'Required for Gemini Flash model')}
 
         <button
           onClick={() => { onSave(draft); onClose() }}
