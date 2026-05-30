@@ -66,10 +66,9 @@ When both happen in one session, commit them in separate commits with clear labe
 
 ---
 
-## Git / PR conventions
+## Git conventions
 
-- Develop on a feature branch; open a PR to merge into `main`.
+- Push directly to `main` — no feature branches, no PRs.
 - `main` should always be in a deployable state.
 - Commit messages: one concise line describing *what changed and why*, no narration of the coding process.
 - Product commits and workflow commits should not be mixed in the same commit.
-- **After pushing changes, always create a PR and merge it to `main` immediately — do not ask for permission first.** The only exception is when the user explicitly says "ask before merging" or "don't merge yet".
